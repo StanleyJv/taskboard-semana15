@@ -13,39 +13,37 @@ class GuardarTransaccionApiRequest extends FormRequest
     }
 
     public function rules(): array
-    {
-        return [
-            'comercio_id' => [
-                'required',
-                Rule::exists('comercios', 'id')
-                    ->where(
-                        fn ($query) => $query->where(
-                            'user_id',
-                            $this->user()->id
-                        )
-                    ),
-            ],
+{
+    return [
+        'comercio_id' => [
+            'required',
+            Rule::exists('comercios', 'id')
+                ->where(
+                    fn ($query) => $query->where(
+                        'user_id',
+                        $this->user()->id
+                    )
+                ),
+        ],
 
-            'cliente_nombre' => [
-                'required',
-                'string',
-                'min:3',
-                'max:255',
-            ],
+        'cliente_nombre' => [
+            'required',
+            'string',
+            'min:3',
+            'max:255',
+        ],
 
-            'monto' => [
-                'required',
-                'numeric',
-                'min:0.01',
-            ],
+        'monto' => [
+            'required',
+            'numeric',
+            'decimal:0,2',
+            'min:0.01',
+            'max:99999999.99',
+        ],
 
-            'estado' => [
-                'nullable',
-                'in:Iniciada,Completada,Fallida',
-            ],
-        ];
-    }
-
+        'estado' => ['prohibited'],
+    ];
+}
     public function messages(): array
     {
         return [
@@ -60,6 +58,9 @@ class GuardarTransaccionApiRequest extends FormRequest
             'monto.min' => 'El monto debe ser mayor a cero.',
 
             'estado.in' => 'El estado indicado no es válido.',
+            'monto.max' => 'El monto no puede superar 99,999,999.99.',
+            'monto.decimal' => 'El monto admite como máximo dos decimales.',
+            'estado.prohibited' => 'El estado no se envía al crear: toda transacción nace Iniciada.',
         ];
     }
 }

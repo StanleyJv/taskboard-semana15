@@ -7,6 +7,7 @@ use App\Http\Requests\GuardarTransaccionApiRequest;
 use App\Http\Resources\TransaccionResource;
 use App\Models\Transaccion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TransaccionApiController extends Controller
 {
@@ -35,16 +36,25 @@ class TransaccionApiController extends Controller
     {
         $datos = $request->validated();
 
-        $transaccion = Transaccion::create([
-            'comercio_id' => $datos['comercio_id'],
-            'cliente_nombre' => $datos['cliente_nombre'],
-            'monto' => $datos['monto'],
-            'moneda' => 'USD',
-            'metodo_pago' => 'No especificado',
-            'estado' => $datos['estado'] ?? 'Iniciada',
-        ]);
+        $datos['moneda'] = 'USD';
+        $datos['metodo_pago'] = 'No especificado';
+        $datos['estado'] = 'Iniciada';
 
-        return (new TransaccionResource($transaccion))
+        $t = DB::transaction(function () use ($datos) {
+
+            $t = Transaccion::create($datos);
+
+            $t->eventos()->create([
+                'tipo_evento' => 'creacion',
+                'detalle' => 'Transacción iniciada',
+                'estado_anterior' => 'Iniciada',
+                'estado_nuevo' => 'Iniciada',
+            ]);
+
+            return $t;
+        });
+
+        return (new TransaccionResource($t))
             ->response()
             ->setStatusCode(201);
     }

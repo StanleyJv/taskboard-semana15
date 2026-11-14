@@ -7,6 +7,8 @@ use App\Http\Resources\ComercioResource;
 use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\Api\TransaccionApiController;
 
+
+
 Route::post('/login', [AuthApiController::class, 'login'])
     ->middleware('throttle:5,1');
 
@@ -50,4 +52,5 @@ Route::middleware('auth:sanctum')->group(function () {
         ->parameters([
             'transacciones' => 'transaccion',
         ]);
+
 });
